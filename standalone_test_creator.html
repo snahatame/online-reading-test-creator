@@ -1,0 +1,646 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reading Comprehension Test Creator</title>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect } = React;
+
+    // Lucide React Icons (inline SVG)
+    const Plus = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"></line>
+        <line x1="5" y1="12" x2="19" y2="12"></line>
+      </svg>
+    );
+
+    const Trash2 = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="3 6 5 6 21 6"></polyline>
+        <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+        <line x1="10" y1="11" x2="10" y2="17"></line>
+        <line x1="14" y1="11" x2="14" y2="17"></line>
+      </svg>
+    );
+
+    const Eye = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+        <circle cx="12" cy="12" r="3"></circle>
+      </svg>
+    );
+
+    const Download = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="7 10 12 15 17 10"></polyline>
+        <line x1="12" y1="15" x2="12" y2="3"></line>
+      </svg>
+    );
+
+    const Upload = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+        <polyline points="17 8 12 3 7 8"></polyline>
+        <line x1="12" y1="3" x2="12" y2="15"></line>
+      </svg>
+    );
+
+    const Copy = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
+        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
+      </svg>
+    );
+
+    const Check = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="20 6 9 17 4 12"></polyline>
+      </svg>
+    );
+
+    const ChevronLeft = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="15 18 9 12 15 6"></polyline>
+      </svg>
+    );
+
+    const ChevronRight = ({ size = 24 }) => (
+      <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <polyline points="9 18 15 12 9 6"></polyline>
+      </svg>
+    );
+
+    // サンプルデータ
+    const initialData = [
+      {
+        id: 1,
+        passage: `The concept of artificial intelligence has evolved dramatically since its inception in the 1950s. Early pioneers like Alan Turing proposed that machines could one day think like humans, leading to the famous Turing Test. This test evaluates a machine's ability to exhibit intelligent behavior indistinguishable from that of a human.
+
+In the decades that followed, AI research experienced periods of great optimism followed by "AI winters" when progress stalled and funding decreased. However, the field has recently experienced a renaissance thanks to advances in machine learning and neural networks. Modern AI systems can now recognize speech, translate languages, drive cars, and even create art.
+
+The development of deep learning algorithms has been particularly transformative. These systems learn from vast amounts of data, identifying patterns that would be impossible for humans to detect. Companies worldwide are investing billions in AI research, seeing it as crucial for future competitiveness. Yet concerns remain about job displacement, privacy, and the ethical implications of increasingly autonomous systems.
+
+As AI continues to advance, society faces important questions about how to harness its benefits while managing its risks. The technology promises to revolutionize healthcare, education, and scientific research, but it also requires careful oversight to ensure it serves humanity's best interests.`,
+        questions: [
+          {
+            id: 'q1',
+            text: 'What is the purpose of the Turing Test?',
+            options: [
+              'To measure computer processing speed',
+              'To evaluate if a machine can exhibit human-like intelligence',
+              'To test programming languages',
+              'To measure network connectivity'
+            ],
+            correctAnswer: 1
+          },
+          {
+            id: 'q2',
+            text: 'What are "AI winters" referring to?',
+            options: [
+              'Cold weather affecting computers',
+              'Periods when AI research was conducted in winter',
+              'Times when AI progress stalled and funding decreased',
+              'Seasonal variations in AI performance'
+            ],
+            correctAnswer: 2
+          },
+          {
+            id: 'q3',
+            text: 'According to the passage, what has been particularly transformative in AI development?',
+            options: [
+              'The Turing Test',
+              'Government regulations',
+              'Deep learning algorithms',
+              'Computer hardware improvements'
+            ],
+            correctAnswer: 2
+          }
+        ]
+      },
+      {
+        id: 2,
+        passage: `The Mediterranean diet has long been celebrated as one of the healthiest eating patterns in the world. Originating from countries bordering the Mediterranean Sea, this diet emphasizes plant-based foods, olive oil, fish, and moderate amounts of dairy and wine. Research has consistently shown that people following this diet have lower rates of heart disease, diabetes, and certain cancers.
+
+One of the key components is olive oil, which is rich in monounsaturated fats and antioxidants. Unlike saturated fats found in butter and red meat, these healthy fats can help reduce inflammation and lower cholesterol levels. The diet also includes abundant vegetables, fruits, whole grains, legumes, and nuts, providing essential vitamins, minerals, and fiber.
+
+Fish and seafood are preferred protein sources, consumed several times per week. These foods are high in omega-3 fatty acids, which support brain health and reduce the risk of cardiovascular disease. Red meat is limited to a few times per month, while poultry and eggs are eaten in moderate amounts.
+
+Beyond the food itself, the Mediterranean lifestyle emphasizes eating meals with family and friends, taking time to enjoy food, and staying physically active. This holistic approach to health extends beyond nutrition to encompass social and emotional well-being, contributing to the diet's overall effectiveness in promoting longevity and quality of life.`,
+        questions: [
+          {
+            id: 'q4',
+            text: 'What is a key component of the Mediterranean diet mentioned in the passage?',
+            options: [
+              'Butter',
+              'Red meat',
+              'Olive oil',
+              'Processed foods'
+            ],
+            correctAnswer: 2
+          },
+          {
+            id: 'q5',
+            text: 'How often is red meat recommended in the Mediterranean diet?',
+            options: [
+              'Daily',
+              'Several times per week',
+              'A few times per month',
+              'Never'
+            ],
+            correctAnswer: 2
+          },
+          {
+            id: 'q6',
+            text: 'What does the passage say about the Mediterranean lifestyle beyond food?',
+            options: [
+              'It focuses only on exercise',
+              'It emphasizes eating alone',
+              'It includes social meals and physical activity',
+              'It requires strict calorie counting'
+            ],
+            correctAnswer: 2
+          }
+        ]
+      },
+      {
+        id: 3,
+        passage: `The Great Barrier Reef, located off the coast of Queensland, Australia, is the world's largest coral reef system. Stretching over 2,300 kilometers, it comprises roughly 2,900 individual reefs and 900 islands. This natural wonder is so vast that it can be seen from space, making it one of Earth's most remarkable living structures.
+
+The reef is home to an incredible diversity of marine life, including over 1,500 species of fish, 400 types of coral, and countless other organisms such as sea turtles, dolphins, and sharks. This biodiversity makes it one of the most complex ecosystems on the planet. The coral polyps that build the reef have a symbiotic relationship with algae called zooxanthellae, which provide the coral with nutrients through photosynthesis.
+
+However, the Great Barrier Reef faces serious threats from climate change, particularly ocean warming and acidification. Rising water temperatures cause coral bleaching, a stress response where corals expel their symbiotic algae and turn white. If conditions don't improve quickly, the coral can die. Multiple mass bleaching events in recent years have damaged large portions of the reef.
+
+Conservation efforts are underway to protect this natural treasure. Scientists are researching coral resilience and restoration techniques, while governments work to reduce pollution and manage tourism sustainably. The reef's survival depends on global action to address climate change and local efforts to minimize direct human impacts.`,
+        questions: [
+          {
+            id: 'q7',
+            text: 'How long is the Great Barrier Reef?',
+            options: [
+              'Over 1,000 kilometers',
+              'Over 2,300 kilometers',
+              'Over 5,000 kilometers',
+              'Over 10,000 kilometers'
+            ],
+            correctAnswer: 1
+          },
+          {
+            id: 'q8',
+            text: 'What causes coral bleaching according to the passage?',
+            options: [
+              'Too much sunlight',
+              'Rising water temperatures',
+              'Pollution only',
+              'Overfishing'
+            ],
+            correctAnswer: 1
+          },
+          {
+            id: 'q9',
+            text: 'What is the symbiotic relationship mentioned in the passage?',
+            options: [
+              'Fish and coral',
+              'Dolphins and sharks',
+              'Coral polyps and zooxanthellae algae',
+              'Sea turtles and fish'
+            ],
+            correctAnswer: 2
+          }
+        ]
+      }
+    ];
+
+    function TestCreatorApp() {
+      const [testData, setTestData] = useState(initialData);
+      const [editingPassageIndex, setEditingPassageIndex] = useState(0);
+      const [testTitle, setTestTitle] = useState('Reading Comprehension Test Creator');
+      const [saved, setSaved] = useState(false);
+      const [copied, setCopied] = useState(false);
+      const [previewMode, setPreviewMode] = useState(false);
+      const [previewPassage, setPreviewPassage] = useState(0);
+      const [previewResponses, setPreviewResponses] = useState({});
+      const [layout, setLayout] = useState('side-by-side');
+      const [showResults, setShowResults] = useState(false);
+      const [testResults, setTestResults] = useState(null);
+
+      useEffect(() => {
+        const loadData = () => {
+          try {
+            const stored = localStorage.getItem('test-data');
+            if (stored) {
+              const data = JSON.parse(stored);
+              setTestData(data.passages);
+              setTestTitle(data.title || 'Reading Comprehension Test Creator');
+              setLayout(data.layout || 'side-by-side');
+            }
+          } catch (error) {
+            console.log('No saved data found');
+          }
+        };
+        loadData();
+      }, []);
+
+      const saveToStorage = () => {
+        try {
+          const dataToSave = {
+            title: testTitle,
+            passages: testData,
+            layout: layout,
+            updatedAt: new Date().toISOString()
+          };
+          localStorage.setItem('test-data', JSON.stringify(dataToSave));
+          setSaved(true);
+          setTimeout(() => setSaved(false), 2000);
+        } catch (error) {
+          alert('Failed to save test data');
+        }
+      };
+
+      const publishTest = () => {
+        try {
+          const publishData = {
+            title: testTitle,
+            passages: testData,
+            layout: layout,
+            publishedAt: new Date().toISOString()
+          };
+          localStorage.setItem('published-test', JSON.stringify(publishData));
+          alert('Test published successfully! Participants can now access it.');
+        } catch (error) {
+          alert('Failed to publish test');
+        }
+      };
+
+      const generateTestURL = () => {
+        return window.location.href.split('?')[0] + '?mode=test';
+      };
+
+      const copyTestURL = () => {
+        const url = generateTestURL();
+        navigator.clipboard.writeText(url);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 2000);
+      };
+
+      const updatePassageText = (index, text) => {
+        const newData = [...testData];
+        newData[index].passage = text;
+        setTestData(newData);
+      };
+
+      const addNewPassage = () => {
+        const newPassage = {
+          id: Date.now(),
+          passage: '',
+          questions: []
+        };
+        setTestData([...testData, newPassage]);
+        setEditingPassageIndex(testData.length);
+      };
+
+      const deletePassage = (index) => {
+        if (testData.length > 1) {
+          const newData = testData.filter((_, i) => i !== index);
+          setTestData(newData);
+          if (editingPassageIndex >= newData.length) {
+            setEditingPassageIndex(newData.length - 1);
+          }
+        } else {
+          alert('At least one passage is required');
+        }
+      };
+
+      const addQuestion = (passageIndex) => {
+        const newData = [...testData];
+        const newQuestion = {
+          id: `q${Date.now()}`,
+          text: '',
+          options: ['', '', '', ''],
+          correctAnswer: 0
+        };
+        newData[passageIndex].questions.push(newQuestion);
+        setTestData(newData);
+      };
+
+      const updateQuestion = (passageIndex, questionIndex, field, value) => {
+        const newData = [...testData];
+        newData[passageIndex].questions[questionIndex][field] = value;
+        setTestData(newData);
+      };
+
+      const updateOption = (passageIndex, questionIndex, optionIndex, value) => {
+        const newData = [...testData];
+        newData[passageIndex].questions[questionIndex].options[optionIndex] = value;
+        setTestData(newData);
+      };
+
+      const deleteQuestion = (passageIndex, questionIndex) => {
+        const newData = [...testData];
+        newData[passageIndex].questions.splice(questionIndex, 1);
+        setTestData(newData);
+      };
+
+      const exportData = () => {
+        const exportData = {
+          title: testTitle,
+          passages: testData,
+          layout: layout,
+          exportedAt: new Date().toISOString()
+        };
+        const dataStr = JSON.stringify(exportData, null, 2);
+        const dataBlob = new Blob([dataStr], { type: 'application/json' });
+        const url = URL.createObjectURL(dataBlob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `${testTitle.replace(/\s+/g, '-').toLowerCase()}.json`;
+        link.click();
+      };
+
+      const importData = (event) => {
+        const file = event.target.files[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            try {
+              const imported = JSON.parse(e.target.result);
+              if (imported.passages && Array.isArray(imported.passages)) {
+                setTestData(imported.passages);
+                setTestTitle(imported.title || 'Reading Comprehension Test Creator');
+                setLayout(imported.layout || 'side-by-side');
+                setEditingPassageIndex(0);
+                alert('Test data imported successfully!');
+              } else {
+                alert('Invalid file format');
+              }
+            } catch (error) {
+              alert('Failed to parse JSON file');
+            }
+          };
+          reader.readAsText(file);
+        }
+      };
+
+      const calculateResults = () => {
+        let totalQuestions = 0;
+        let correctAnswers = 0;
+        const detailedResults = [];
+
+        testData.forEach((passage, pIndex) => {
+          passage.questions.forEach((question, qIndex) => {
+            totalQuestions++;
+            const userAnswer = previewResponses[question.id];
+            const isCorrect = userAnswer === question.correctAnswer;
+            
+            if (isCorrect) {
+              correctAnswers++;
+            }
+
+            detailedResults.push({
+              passageIndex: pIndex,
+              questionIndex: qIndex,
+              questionText: question.text,
+              userAnswer: userAnswer !== undefined ? question.options[userAnswer] : 'No answer',
+              correctAnswer: question.options[question.correctAnswer],
+              isCorrect: isCorrect
+            });
+          });
+        });
+
+        const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+        return {
+          totalQuestions,
+          correctAnswers,
+          score,
+          detailedResults
+        };
+      };
+
+      const handleSubmitTest = () => {
+        const results = calculateResults();
+        setTestResults(results);
+        setShowResults(true);
+      };
+
+      const currentEditPassage = testData[editingPassageIndex];
+
+      if (previewMode) {
+        if (showResults && testResults) {
+          return (
+            <div className="min-h-screen bg-gray-100 p-4">
+              <div className="max-w-4xl mx-auto">
+                <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">Test Results</h1>
+                  <p className="text-gray-600">{testTitle}</p>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+                  <div className="text-center">
+                    <div className="text-6xl font-bold mb-2" style={{ color: testResults.score >= 70 ? '#10b981' : testResults.score >= 50 ? '#f59e0b' : '#ef4444' }}>
+                      {testResults.score}%
+                    </div>
+                    <p className="text-xl text-gray-600 mb-4">
+                      {testResults.correctAnswers} out of {testResults.totalQuestions} correct
+                    </p>
+                    <div className="w-full bg-gray-200 rounded-full h-4">
+                      <div 
+                        className="h-4 rounded-full transition-all"
+                        style={{ 
+                          width: `${testResults.score}%`,
+                          backgroundColor: testResults.score >= 70 ? '#10b981' : testResults.score >= 50 ? '#f59e0b' : '#ef4444'
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 mb-4">
+                  <h2 className="text-2xl font-bold text-gray-800 mb-4">Question by Question</h2>
+                  <div className="space-y-4">
+                    {testResults.detailedResults.map((result, index) => (
+                      <div key={index} className={`p-4 rounded-lg border-2 ${result.isCorrect ? 'border-green-500 bg-green-50' : 'border-red-500 bg-red-50'}`}>
+                        <div className="flex items-start gap-3">
+                          <div className={`mt-1 w-6 h-6 rounded-full flex items-center justify-center flex-shrink-0 ${result.isCorrect ? 'bg-green-500' : 'bg-red-500'}`}>
+                            <span className="text-white font-bold text-sm">{result.isCorrect ? '✓' : '✗'}</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="font-medium text-gray-800 mb-2">
+                              Passage {result.passageIndex + 1}, Question {result.questionIndex + 1}: {result.questionText}
+                            </p>
+                            <div className="text-sm">
+                              <p className="mb-1">
+                                <span className="font-medium">Your answer: </span>
+                                <span className={result.isCorrect ? 'text-green-700' : 'text-red-700'}>
+                                  {result.userAnswer}
+                                </span>
+                              </p>
+                              {!result.isCorrect && (
+                                <p>
+                                  <span className="font-medium">Correct answer: </span>
+                                  <span className="text-green-700">{result.correctAnswer}</span>
+                                </p>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-4 flex justify-center gap-4">
+                  <button
+                    onClick={() => {
+                      setShowResults(false);
+                      setTestResults(null);
+                      setPreviewResponses({});
+                      setPreviewPassage(0);
+                    }}
+                    className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Retry Test
+                  </button>
+                  <button
+                    onClick={() => {
+                      setPreviewMode(false);
+                      setShowResults(false);
+                      setTestResults(null);
+                      setPreviewResponses({});
+                      setPreviewPassage(0);
+                    }}
+                    className="px-6 py-3 bg-gray-600 text-white rounded-lg font-medium hover:bg-gray-700 transition-colors"
+                  >
+                    Exit Preview
+                  </button>
+                </div>
+              </div>
+            </div>
+          );
+        }
+
+        const passage = testData[previewPassage];
+
+        return (
+          <div className="min-h-screen bg-gray-100 p-4">
+            <div className="max-w-7xl mx-auto">
+              <div className="bg-white rounded-lg shadow-md p-4 mb-4 flex justify-between items-center">
+                <div className="text-lg font-bold text-gray-800">{testTitle}</div>
+                <div className="flex items-center gap-4">
+                  <div className="text-sm text-gray-600">
+                    Layout: <span className="font-medium">{layout === 'side-by-side' ? 'Side by Side' : 'Top-Bottom'}</span>
+                  </div>
+                  <div className="text-sm text-gray-600">
+                    Passage {previewPassage + 1} of {testData.length}
+                  </div>
+                  <button
+                    onClick={() => {
+                      setPreviewMode(false);
+                      setPreviewResponses({});
+                      setPreviewPassage(0);
+                    }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
+                  >
+                    Exit Preview
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ display: layout === 'side-by-side' ? 'grid' : 'flex', gridTemplateColumns: layout === 'side-by-side' ? '1fr 1fr' : 'none', flexDirection: layout === 'top-bottom' ? 'column' : 'row', gap: '1rem' }} className="mb-4">
+                <div className="bg-white rounded-lg shadow-md p-6 overflow-y-auto" style={{ maxHeight: layout === 'side-by-side' ? '60vh' : '40vh' }}>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">Reading Passage</h2>
+                  <div className="text-gray-700 whitespace-pre-line leading-relaxed">
+                    {passage.passage}
+                  </div>
+                </div>
+
+                <div className="bg-white rounded-lg shadow-md p-6 overflow-y-auto" style={{ maxHeight: layout === 'side-by-side' ? '60vh' : '40vh' }}>
+                  <h2 className="text-xl font-bold text-gray-800 mb-4">Comprehension Questions</h2>
+                  <div className="space-y-6">
+                    {passage.questions.map((question, qIndex) => (
+                      <div key={question.id} className="border-b border-gray-200 pb-4 last:border-0">
+                        <p className="font-medium text-gray-800 mb-3">
+                          {qIndex + 1}. {question.text}
+                        </p>
+                        <div className="space-y-2">
+                          {question.options.map((option, oIndex) => (
+                            <label
+                              key={oIndex}
+                              className="flex items-center p-3 border border-gray-300 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors"
+                            >
+                              <input
+                                type="radio"
+                                name={question.id}
+                                checked={previewResponses[question.id] === oIndex}
+                                onChange={() => setPreviewResponses({...previewResponses, [question.id]: oIndex})}
+                                className="mr-3 w-4 h-4"
+                              />
+                              <span className="text-gray-700">{option}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-white rounded-lg shadow-md p-4 flex justify-between items-center">
+                <button
+                  onClick={() => setPreviewPassage(Math.max(0, previewPassage - 1))}
+                  disabled={previewPassage === 0}
+                  className="flex items-center gap-2 px-6 py-3 bg-gray-200 text-gray-700 rounded-lg font-medium hover:bg-gray-300 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                >
+                  <ChevronLeft size={20} />
+                  Previous
+                </button>
+                
+                {previewPassage === testData.length - 1 ? (
+                  <button
+                    onClick={handleSubmitTest}
+                    className="px-8 py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 transition-colors"
+                  >
+                    Submit Test
+                  </button>
+                ) : (
+                  <button
+                    onClick={() => setPreviewPassage(Math.min(testData.length - 1, previewPassage + 1))}
+                    className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
+                  >
+                    Next
+                    <ChevronRight size={20} />
+                  </button>
+                )}
+              </div>
+            </div>
+          </div>
+        );
+      }
+
+      return (
+        <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
+          <div className="max-w-7xl mx-auto">
+            <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div className="flex-1">
+                  <h1 className="text-3xl font-bold text-gray-800 mb-2">Reading Comprehension Test Creator</h1>
+                  <input
+                    type="text"
+                    value={testTitle}
+                    onChange={(e) => setTestTitle(e.target.value)}
+                    className="w-full max-w-md px-3 py-2 border-b
